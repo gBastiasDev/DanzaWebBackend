@@ -23,6 +23,21 @@ export const getDonations = async (req: Request, res: Response): Promise<void> =
 };
 
 
+export const getDonation = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { flowOrder } = req.params;
+    const donation = await Donation.findOne({ flowOrder });
+    if (!donation) {
+      res.status(404).json({ message: "Donación no encontrada" });
+      return;
+    }
+    res.json(donation);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 export const createDonation = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, donation_date, amount, email, state, photo, method } = req.body;
