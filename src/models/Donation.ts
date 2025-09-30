@@ -1,6 +1,7 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IDonation extends Document {
+  _id: Types.ObjectId;
   name: string;
   donation_date: Date;
   amount: number;
@@ -8,6 +9,7 @@ export interface IDonation extends Document {
   state: string;
   photo?: string;
   method: string;
+  flowOrder?: string;
 }
 
 const DonationSchema: Schema<IDonation> = new Schema(
@@ -17,8 +19,9 @@ const DonationSchema: Schema<IDonation> = new Schema(
     amount: { type: Number, required: true },
     email: { type: String, required: true },
     state: { type: String, required: true },
-    photo: { type: String },
+    photo: { type: String, required: false },
     method: { type: String, required: true },
+    flowOrder: { type: String, required: false },
   },
   { timestamps: true }
 );
