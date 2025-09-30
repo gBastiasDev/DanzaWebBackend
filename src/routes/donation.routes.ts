@@ -6,6 +6,6 @@ const router = Router();
 router.get("/", getDonations);
 router.post("/", createDonation);
 router.post("/flow", createFlowDonation);
-router.post("/donations/confirm", confirmFlowDonation);
+router.post("/confirm", confirmFlowDonation);
 
 export default router;
