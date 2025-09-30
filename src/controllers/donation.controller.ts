@@ -14,8 +14,8 @@ export const getDonations = async (req: Request, res: Response): Promise<void> =
 
 export const createDonation = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, donation_date, amount, email } = req.body;
-    const newDonation = new Donation({ name, donation_date, amount, email });
+    const { name, donation_date, amount, email, state, photo, method } = req.body;
+    const newDonation = new Donation({ name, donation_date, amount, email, state, photo, method });
     await newDonation.save();
     res.status(201).json(newDonation);
   } catch (error: any) {
