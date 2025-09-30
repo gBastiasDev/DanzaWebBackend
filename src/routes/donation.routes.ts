@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authMiddleware } from "../middlewares/auth";
 import { 
     getDonations, 
     getDonation, 
@@ -11,7 +12,7 @@ import {
 
 const router = Router();
 
-router.get("/", getDonations);
+router.get("/", authMiddleware, getDonations);
 router.get("/:flowOrder", getDonation);
 router.post("/", createDonation);
 router.post("/flow", createFlowDonation);
