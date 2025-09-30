@@ -1,5 +1,15 @@
 import { Request, Response } from "express";
 import Donation from "../models/Donation";
+import axios from "axios";
+import crypto from "crypto";
+
+
+
+
+const FLOW_API_KEY = process.env.FLOW_API_KEY!;
+const FLOW_SECRET = process.env.FLOW_SECRET!;
+const FLOW_API_URL = process.env.FLOW_API_URL! || "https://sandbox.flow.cl/api"; 
+// https://www.flow.cl/api
 
 
 
@@ -12,6 +22,7 @@ export const getDonations = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+
 export const createDonation = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, donation_date, amount, email, state, photo, method } = req.body;
@@ -20,5 +31,110 @@ export const createDonation = async (req: Request, res: Response): Promise<void>
     res.status(201).json(newDonation);
   } catch (error: any) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+
+export const createFlowDonation = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, donation_date, amount, email, photo, method } = req.body;
+
+    const newDonation = new Donation({
+      name,
+      donation_date,
+      amount,
+      email,
+      state: "pendiente",
+      photo,
+      method,
+    });
+
+    await newDonation.save();
+
+    const params: Record<string, any> = {
+      apiKey: FLOW_API_KEY,
+      commerceOrder: newDonation._id.toString(),
+      subject: "Donación Danza UC",
+      currency: "CLP",
+      amount,
+      email,
+      urlConfirmation: `${process.env.BACKEND_URL}/donations/confirm`,
+      urlReturn: `${process.env.FRONTEND_URL}/donations/success`,
+    };
+
+    const signature = crypto
+      .createHmac("sha256", FLOW_SECRET)
+      .update(new URLSearchParams(params).toString())
+      .digest("hex");
+
+    const { data } = await axios.post(`${FLOW_API_URL}/payment/create`, {
+      ...params,
+      s: signature,
+    });
+
+    newDonation.flowOrder = data.flowOrder;
+    await newDonation.save();
+
+    res.status(201).json({
+      donation: newDonation,
+      flowUrl: data.url,
+    });
+  } catch (error: any) {
+    console.error("Error creando donación en Flow:", error.response?.data || error.message);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+export const confirmFlowDonation = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      res.status(400).json({ message: "Falta token de Flow" });
+      return;
+    }
+
+
+    const params: Record<string, any> = {
+      apiKey: FLOW_API_KEY,
+      token,
+    };
+
+    const signature = crypto
+      .createHmac("sha256", FLOW_SECRET)
+      .update(new URLSearchParams(params).toString())
+      .digest("hex");
+
+
+    const { data } = await axios.post(`${FLOW_API_URL}/payment/getStatus`, {
+      ...params,
+      s: signature,
+    });
+
+    const flowOrder = data.flowOrder;
+    const status = data.paymentData?.status;
+
+    const donation = await Donation.findOne({ flowOrder });
+    if (!donation) {
+      res.status(404).json({ message: "Donación no encontrada" });
+      return;
+    }
+
+
+    if (status === 2) {
+      donation.state = "pagado";
+    } else if (status === 3) {
+      donation.state = "fallido";
+    } else {
+      donation.state = "pendiente";
+    }
+
+    await donation.save();
+
+
+    res.status(200).json({ message: "Confirmación recibida", donation });
+  } catch (error: any) {
+    console.error("Error en confirmación Flow:", error.response?.data || error.message);
+    res.status(500).json({ message: error.message });
   }
 };
