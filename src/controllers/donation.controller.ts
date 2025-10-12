@@ -7,7 +7,7 @@ dotenv.config();
 
 
 
-const FLOW_API_KEY = process.env.FLOW_API_KEY;
+const FLOW_API_KEY = process.env.FLOW_API_KEY || "";
 const FLOW_SECRET = process.env.FLOW_SECRET!;
 const FLOW_API_URL = process.env.FLOW_API_URL! || "https://sandbox.flow.cl/api"; 
 // https://www.flow.cl/api
@@ -118,21 +118,19 @@ export const confirmFlowDonation = async (req: Request, res: Response): Promise<
     }
 
 
-    const params: Record<string, any> = {
+    const params = new URLSearchParams({
       apiKey: FLOW_API_KEY,
       token,
-    };
+    });
 
     const signature = crypto
       .createHmac("sha256", FLOW_SECRET)
-      .update(new URLSearchParams(params).toString())
+      .update(params.toString())
       .digest("hex");
 
-
-    const { data } = await axios.post(`${FLOW_API_URL}/payment/getStatus`, {
-      ...params,
-      s: signature,
-    });
+    const { data } = await axios.get(
+      `${FLOW_API_URL}/payment/getStatus?${params.toString()}&s=${signature}`
+    );
 
     const flowOrder = data.flowOrder;
     const status = data.paymentData?.status;
