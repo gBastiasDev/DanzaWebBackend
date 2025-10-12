@@ -74,7 +74,7 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
       currency: "CLP",
       amount,
       email,
-      urlConfirmation: `${process.env.BACKEND_URL}/donations/confirm`,
+      urlConfirmation: `${process.env.BACKEND_URL}/api/donations/confirm`,
       urlReturn: `${process.env.FRONTEND_URL}/donations/success`,
     };
 
