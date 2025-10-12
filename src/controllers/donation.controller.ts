@@ -111,6 +111,7 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
 
 export const confirmFlowDonation = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log("Confirmación Flow recibida:", req.body);
     const { token } = req.body;
     if (!token) {
       res.status(400).json({ message: "Falta token de Flow" });
@@ -132,6 +133,7 @@ export const confirmFlowDonation = async (req: Request, res: Response): Promise<
       `${FLOW_API_URL}/payment/getStatus?${params.toString()}&s=${signature}`
     );
 
+    console.log("Datos de estado de pago recibidos de Flow:", data);
     const flowOrder = data.flowOrder;
     const status = data.paymentData?.status;
 
