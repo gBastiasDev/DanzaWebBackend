@@ -10,6 +10,7 @@ export interface IDonation extends Document {
   photo?: string;
   method: string;
   flowOrder?: string;
+  token?: string;
 }
 
 const DonationSchema: Schema<IDonation> = new Schema(
@@ -22,6 +23,7 @@ const DonationSchema: Schema<IDonation> = new Schema(
     photo: { type: String, required: false },
     method: { type: String, required: true },
     flowOrder: { type: String, required: false },
+    token: { type: String, required: false },
   },
   { timestamps: true }
 );
