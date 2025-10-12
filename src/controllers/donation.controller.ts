@@ -2,11 +2,12 @@ import { Request, Response } from "express";
 import Donation from "../models/Donation";
 import axios from "axios";
 import crypto from "crypto";
+import dotenv from "dotenv";
+dotenv.config();
 
 
 
-
-const FLOW_API_KEY = process.env.FLOW_API_KEY!;
+const FLOW_API_KEY = process.env.FLOW_API_KEY;
 const FLOW_SECRET = process.env.FLOW_SECRET!;
 const FLOW_API_URL = process.env.FLOW_API_URL! || "https://sandbox.flow.cl/api"; 
 // https://www.flow.cl/api
@@ -77,22 +78,29 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
       urlReturn: `${process.env.FRONTEND_URL}/donations/success`,
     };
 
+    const orderedParams = Object.keys(params)
+      .sort()
+      .map((key) => `${key}=${params[key]}`)
+      .join("&");
+
     const signature = crypto
       .createHmac("sha256", FLOW_SECRET)
-      .update(new URLSearchParams(params).toString())
+      .update(orderedParams)
       .digest("hex");
+    
+    const { data: { url, token, flowOrder } } = await axios.post(
+      `${FLOW_API_URL}/payment/create`,
+      new URLSearchParams({ ...params, s: signature }).toString(),
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    );
 
-    const { data } = await axios.post(`${FLOW_API_URL}/payment/create`, {
-      ...params,
-      s: signature,
-    });
-
-    newDonation.flowOrder = data.flowOrder;
+    newDonation.flowOrder = flowOrder;
+    newDonation.token = token;
     await newDonation.save();
 
     res.status(201).json({
       donation: newDonation,
-      flowUrl: data.url,
+      flowUrl: `${url}?token=${token}`,
     });
   } catch (error: any) {
     console.error("Error creando donación en Flow:", error.response?.data || error.message);
