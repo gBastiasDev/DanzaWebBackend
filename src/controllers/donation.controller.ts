@@ -75,7 +75,7 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
       amount,
       email,
       urlConfirmation: `${process.env.BACKEND_URL}/api/donations/confirm`,
-      urlReturn: `${process.env.FRONTEND_URL}/donations/success`,
+      urlReturn: `${process.env.BACKEND_URL}/api/donations/success`,
     };
 
     const orderedParams = Object.keys(params)
@@ -132,7 +132,6 @@ export const confirmFlowDonation = async (req: Request, res: Response): Promise<
       `${FLOW_API_URL}/payment/getStatus?${params.toString()}&s=${signature}`
     );
 
-    console.log("Datos de estado de pago recibidos de Flow:", data);
     const flowOrder = data.flowOrder;
     const status = data.status;
 
@@ -142,7 +141,6 @@ export const confirmFlowDonation = async (req: Request, res: Response): Promise<
       return;
     }
 
-    console.log(donation, status)
     if (status === 2) {
       donation.state = "pagado";
     } else if (status === 3) {
@@ -152,7 +150,6 @@ export const confirmFlowDonation = async (req: Request, res: Response): Promise<
     }
 
     await donation.save();
-
 
     res.status(200).json({ message: "Confirmación recibida", donation });
   } catch (error: any) {
