@@ -75,7 +75,7 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
       amount,
       email,
       urlConfirmation: `${process.env.BACKEND_URL}/api/donations/confirm`,
-      urlReturn: `${process.env.BACKEND_URL}/api/donations/success`,
+      urlReturn: `${process.env.BACKEND_URL}/api/donations/redirect`,
     };
 
     const orderedParams = Object.keys(params)
@@ -157,3 +157,21 @@ export const confirmFlowDonation = async (req: Request, res: Response): Promise<
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const redirectFlowDonation = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) return res.status(400).send("Token no recibido");
+
+    // Llamas a Flow para obtener el estado del pago
+    const donation = await Donation.findOne({ token });
+    
+    // Rediriges al frontend con el ID o estado del pago en query params
+    res.redirect(`https://frontend_url/donations/success?state=${donation!.state}`);
+  } catch (err) {
+    console.error(err);
+    res.redirect(`https://frontend_url/donations/success?status=error`);
+  }
+}
