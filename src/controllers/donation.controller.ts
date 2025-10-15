@@ -169,9 +169,9 @@ export const redirectFlowDonation = async (req: Request, res: Response) => {
     const donation = await Donation.findOne({ token });
     
     // Rediriges al frontend con el ID o estado del pago en query params
-    res.redirect(`https://frontend_url/donations/success?state=${donation!.state}`);
+    res.redirect(`${process.env.FRONTEND_URL}/donations/success?state=${donation!.state}`);
   } catch (err) {
     console.error(err);
-    res.redirect(`https://frontend_url/donations/success?status=error`);
+    res.redirect(`${process.env.FRONTEND_URL}/donations/success?status=error`);
   }
 }
