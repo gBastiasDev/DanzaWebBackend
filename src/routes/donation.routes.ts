@@ -8,7 +8,6 @@ import {
     confirmFlowDonation,
     redirectFlowDonation
 } from "../controllers/donation.controller";
-import { redirect } from "react-router-dom";
 
 
 
