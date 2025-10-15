@@ -78,6 +78,15 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
       urlReturn: `${process.env.BACKEND_URL}/api/donations/redirect`,
     };
 
+    console.log("apiKey:", params.apiKey, typeof params.apiKey);
+    console.log("commerceOrder:", params.commerceOrder, typeof params.commerceOrder);
+    console.log("subject:", params.subject, typeof params.subject);
+    console.log("currency:", params.currency, typeof params.currency);
+    console.log("amount:", params.amount, typeof params.amount);
+    console.log("email:", params.email, typeof params.email);
+    console.log("urlConfirmation:", params.urlConfirmation, typeof params.urlConfirmation);
+    console.log("urlReturn:", params.urlReturn, typeof params.urlReturn);
+
     const orderedParams = Object.keys(params)
       .sort()
       .map((key) => `${key}=${params[key]}`)
