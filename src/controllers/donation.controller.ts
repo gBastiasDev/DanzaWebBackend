@@ -9,7 +9,7 @@ dotenv.config();
 
 const FLOW_API_KEY = process.env.FLOW_API_KEY || "";
 const FLOW_SECRET = process.env.FLOW_SECRET!;
-const FLOW_API_URL = process.env.FLOW_API_URL! || "https://sandbox.flow.cl/api"; 
+const FLOW_API_URL = process.env.FLOW_API_URL || "https://sandbox.flow.cl/api"; 
 
 
 
@@ -69,36 +69,24 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
     const params: Record<string, string> = {
       apiKey: FLOW_API_KEY,
       commerceOrder: newDonation._id.toString(),
-      subject: "Donación Danza UC",
+      subject: "Donacion Danza UC",
       currency: "CLP",
-      amount: amount.toString(),
+      amount: amount,
       email,
       urlConfirmation: `${process.env.BACKEND_URL}/api/donations/confirm`,
       urlReturn: `${process.env.BACKEND_URL}/api/donations/redirect`,
     };
 
-    console.log("apiKey:", params.apiKey, typeof params.apiKey);
-    console.log("commerceOrder:", params.commerceOrder, typeof params.commerceOrder);
-    console.log("subject:", params.subject, typeof params.subject);
-    console.log("currency:", params.currency, typeof params.currency);
-    console.log("amount:", params.amount, typeof params.amount);
-    console.log("email:", params.email, typeof params.email);
-    console.log("urlConfirmation:", params.urlConfirmation, typeof params.urlConfirmation);
-    console.log("urlReturn:", params.urlReturn, typeof params.urlReturn);
-
-    // Ordenar y crear baseString con separador "|"
     const orderedParams = Object.keys(params)
       .sort()
       .map((key) => `${key}=${params[key]}`)
-      .join("|");
+      .join("&");
 
-    // Firmar con tu FLOW_SECRET
     const signature = crypto
       .createHmac("sha256", FLOW_SECRET)
       .update(orderedParams)
       .digest("hex");
 
-    // Enviar a Flow (form-urlencoded)
     const { data: { token, url, flowOrder } } = await axios.post(
       `${FLOW_API_URL}/payment/create`,
       new URLSearchParams({ ...params, s: signature }).toString(),
