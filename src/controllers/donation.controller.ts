@@ -69,7 +69,7 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
     const params: Record<string, string> = {
       apiKey: FLOW_API_KEY,
       commerceOrder: newDonation._id.toString(),
-      subject: "Donación Danza UC",
+      subject: "Donacion Danza UC",
       currency: "CLP",
       amount: amount,
       email,
@@ -92,7 +92,7 @@ export const createFlowDonation = async (req: Request, res: Response): Promise<v
       new URLSearchParams({ ...params, s: signature }).toString(),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
-    
+
     newDonation.flowOrder = flowOrder;
     newDonation.token = token;
     await newDonation.save();
